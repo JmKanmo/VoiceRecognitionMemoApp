@@ -124,24 +124,20 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true">
 
-            <EditText
+            <ImageView
                 android:id="@+id/tts_Edit"
                 android:layout_width="315dp"
-                android:layout_height="wrap_content"
+                android:layout_height="51dp"
                 android:layout_alignParentLeft="true"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="20dp"
-                android:inputType="textImeMultiLine"
-                android:isScrollContainer="true"
-                android:maxHeight="40dp"
-                android:text=""
-                android:textSize="15dp" />
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="20dp" />
 
             <ImageView
                 android:id="@+id/tts_Btn"
                 android:layout_width="61dp"
                 android:layout_height="61dp"
                 android:layout_alignParentRight="true"
+                android:layout_marginTop="10dp"
                 android:layout_marginRight="15dp"
                 android:clickable="true" />
         </RelativeLayout>

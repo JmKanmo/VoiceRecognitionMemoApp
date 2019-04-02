@@ -10,8 +10,10 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.inputmethodservice.InputMethodService;
 import android.media.AudioManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -29,6 +31,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -47,7 +51,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     final Context context = this;
     String stt_file = "stt_file.db";
+    String tts_file = "tts_file.db";
     SharedPreferences sharedPreferences;
+    SharedPreferences sharedPreferences1;
 
     ArrayList<String> arrayList;
 
@@ -76,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     ImageView menu_Btn;
     ImageView stt_Reset;
     ImageView tts_Reset;
-    EditText ttsEdit;
+    ImageView tts_EditBtn;
     ScrollView tts_ScrollView;
     LinearLayout tts_LinearLayout;
     LinearLayout.LayoutParams params;
@@ -84,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     TextView stt_TextView;
 
     int n;
+    String text;
 
     RecognitionListener listener = new RecognitionListener() {
 
@@ -221,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         exit_Btn = findViewById(R.id.exit_btn);
         menu_Btn = findViewById(R.id.menu_btn);
-        ttsEdit = findViewById(R.id.tts_Edit);
+        tts_EditBtn = findViewById(R.id.tts_Edit);
         stt_Btn = findViewById(R.id.stt_Btn);
         tts_Btn = findViewById(R.id.tts_Btn);
         stt_Reset = findViewById(R.id.stt_reset);
@@ -374,62 +381,105 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-
-        ttsEdit.setOnKeyListener(new View.OnKeyListener() {
+        tts_EditBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == event.KEYCODE_ENTER) {
-                    String text = ttsEdit.getText().toString();
-                    if (text.isEmpty() == true) {
-                    } else {
-                        arrayList.add(text);
-                        tts_TextView = new TextView(context);
-                        tts_TextView.setText(text);
-                        tts_TextView.setBackgroundResource(R.drawable.chatbubble);
-                        tts_TextView.setId(++n);
-                        tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
-                        tts_TextView.setLayoutParams(params);
-                        tts_LinearLayout.addView(tts_TextView);
-                        ttsEdit.setText(null);
+            public void onClick(View v) {
+                AlertDialog.Builder ad = new AlertDialog.Builder(context);
+                ad.setTitle("하고싶은 말을 입력하세요"); // 제목 설정
 
-                        tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                            @Override
-                            public void onGlobalLayout() {
-                                tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
-                            }
-                        });
+                final EditText ttsEdit = new EditText(context);
+                ttsEdit.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                // EditText 삽입하기
+                ad.setView(ttsEdit);
+
+                ttsEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (hasFocus) {
+                            InputMethodManager inputMgr = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        }
                     }
-                    return true;
-                }
-                return false;
+                });
+
+                // 취소 버튼 설정
+                ad.setPositiveButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();     //닫기
+                    }
+                });
+
+                // 말하기 버튼 설정
+                ad.setNeutralButton("말하기", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String msg = ttsEdit.getText().toString();
+
+                        if (msg == null || msg.isEmpty() == true || spaceCheck(msg)) {
+                        } else {
+                            text = msg;
+                            if (micFlag == true) stt_Btn.performClick();
+                            am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
+                            arrayList.add(text);
+                            tts_TextView = new TextView(context);
+                            chatBubbleEvent(tts_TextView);
+                            tts_TextView.setText(text);
+                            tts_TextView.setBackgroundResource(R.drawable.chatbubble);
+                            tts_TextView.setId(++n);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
+                            tts_TextView.setLayoutParams(params);
+                            tts_LinearLayout.addView(tts_TextView);
+                            tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                @Override
+                                public void onGlobalLayout() {
+                                    tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
+                                }
+                            });
+                            speak(); //관호
+                        }
+                        //ttsEdit.setText(null);
+                    }
+                });
+
+                // 입력 버튼 설정
+                ad.setNegativeButton("입력", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String msg = ttsEdit.getText().toString();
+
+                        if (msg == null || msg.isEmpty() == true || spaceCheck(msg)) {
+                        } else {
+                            text = msg;
+                            arrayList.add(text);
+                            tts_TextView = new TextView(context);
+                            chatBubbleEvent(tts_TextView);
+                            tts_TextView.setText(text);
+                            tts_TextView.setBackgroundResource(R.drawable.chatbubble);
+                            tts_TextView.setId(++n);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
+                            tts_TextView.setLayoutParams(params);
+                            tts_LinearLayout.addView(tts_TextView);
+                            ttsEdit.setText(null);
+
+                            tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                @Override
+                                public void onGlobalLayout() {
+                                    tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
+                                }
+                            });
+                            Toast.makeText(getApplicationContext(), "입력되었습니다", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                // 창 띄우기
+                ad.show();
             }
         });
 
         tts_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String text = ttsEdit.getText().toString();
-                if (text.isEmpty() == true) {
-                } else {
-                    if (micFlag == true) stt_Btn.performClick();
-                    am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
-                    arrayList.add(text);
-                    tts_TextView = new TextView(context);
-                    tts_TextView.setText(text);
-                    tts_TextView.setBackgroundResource(R.drawable.chatbubble);
-                    tts_TextView.setId(++n);
-                    tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
-                    tts_TextView.setLayoutParams(params);
-                    tts_LinearLayout.addView(tts_TextView);
-                    tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
-                        }
-                    });
-                    speak(); //관호
-                    ttsEdit.setText(null);
-                }
+                speak();
             }
         });
 
@@ -466,6 +516,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             public void onClick(DialogInterface dialog, int which) {
                                 tts_LinearLayout.removeAllViews();
                                 arrayList.clear();
+                                text = null;
                             }
                         }).setPositiveButton("아니요", new DialogInterface.OnClickListener() {
                     @Override
@@ -498,9 +549,19 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
     }
 
+    private boolean spaceCheck(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) != ' ') {
+                return false;
+            }
+        }
+        return true;
+    }
+
     //관호
     private void speak() {
-        String text = ttsEdit.getText().toString();
+        if (micFlag == true) stt_Btn.performClick();
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -510,6 +571,50 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);
         mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+    private void speak(String message) {
+        if (micFlag == true) stt_Btn.performClick();
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
+
+        float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
+        if (pitch < 0.1) pitch = 0.1f;
+        float speed = (speed_bar == null) ? speed_val / 50 : (float) speed_bar.getProgress() / 50;
+        if (speed < 0.1) speed = 0.1f;
+
+        mTTS.setPitch(pitch);
+        mTTS.setSpeechRate(speed);
+        mTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+    private void chatBubbleEvent(final TextView textView) {
+        textView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                AlertDialog.Builder ad = new AlertDialog.Builder(context);
+                final String message = textView.getText().toString();
+                ad.setIcon(android.R.drawable.presence_audio_online);
+                ad.setTitle(message);
+
+                // 말하기 버튼 설정
+                ad.setNeutralButton("말하기", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        speak(message);
+                    }
+                });
+
+                // 닫기 버튼 설정
+                ad.setNegativeButton("닫기", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                // 창 띄우기
+                ad.show();
+                return false;
+            }
+        });
     }
 
     private void scrollBottom(TextView textView) {
@@ -531,7 +636,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     protected void onResume() {
         volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(stt_file, Activity.MODE_PRIVATE);
+        sharedPreferences1 = getSharedPreferences(tts_file, Activity.MODE_PRIVATE);
         stt_TextView.setText(sharedPreferences.getString("keyword", ""));
+        text = sharedPreferences1.getString("text", "");
 
         arrayList = new ArrayList<>();
         Cursor cursor = db.rawQuery("select* from mytable;", null);
@@ -541,6 +648,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
         for (int i = 0; i < arrayList.size(); i++) {
             tts_TextView = new TextView(context);
+            chatBubbleEvent(tts_TextView);
             tts_TextView.setText(arrayList.get(i));
             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
             tts_TextView.setId(++n);
@@ -577,9 +685,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor editor1 = sharedPreferences1.edit();
         String keyword = stt_TextView.getText().toString();
         editor.putString("keyword", keyword);
+        editor1.putString("text", text);
         editor.commit();
+        editor1.commit();
 
         for (int i = 0; i < arrayList.size(); i++) {
             db.execSQL("insert into mytable (message) values('" + arrayList.get(i) + "');");
