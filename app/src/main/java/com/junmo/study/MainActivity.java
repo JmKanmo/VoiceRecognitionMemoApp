@@ -19,6 +19,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     private boolean micFlag = false;
     private boolean cntFlag = false;
 
-    ImageView exit_Btn;
+    ImageView drawer_Btn;
     ImageView tts_Btn;
     ImageView stt_Btn;
     ImageView menu_Btn;
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(1);
                         cntFlag = true;
                         stt_Btn.performClick();
                         stt_Btn.performClick();
@@ -226,7 +228,14 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             finish(); // 액티비티 종료
         }
 
-        exit_Btn = findViewById(R.id.exit_btn);
+        final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final View drawerView = (View) findViewById(R.id.drawer);
+
+        final LinearLayout sign_language_layout = findViewById(R.id.sign_language_layout);
+        final LinearLayout mode_layout = findViewById(R.id.mode_layout);
+        final LinearLayout exit_layout = findViewById(R.id.exit_layout);
+
+        drawer_Btn = findViewById(R.id.drawer_btn);
         menu_Btn = findViewById(R.id.menu_btn);
         tts_EditBtn = findViewById(R.id.tts_Edit);
         stt_Btn = findViewById(R.id.stt_Btn);
@@ -302,10 +311,40 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-        exit_Btn.setOnClickListener(new View.OnClickListener() {
+        drawer_Btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(drawerView);
+            }
+        });
+
+        sign_language_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "수화로 말하기 클릭!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mode_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "스마트폰모드 클릭!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        exit_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        drawerLayout.setDrawerListener(myDrawerListener);
+        drawerView.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                // TODO Auto-generated method stub
+                return true;
             }
         });
 
@@ -529,6 +568,36 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
     }
+
+    DrawerLayout.DrawerListener myDrawerListener = new DrawerLayout.DrawerListener() {
+
+        public void onDrawerClosed(View drawerView) {
+        }
+
+        public void onDrawerOpened(View drawerView) {
+        }
+
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+
+        }
+
+        public void onDrawerStateChanged(int newState) {
+            String state;
+            switch (newState) {
+                case DrawerLayout.STATE_IDLE:
+                    state = "STATE_IDLE";
+                    break;
+                case DrawerLayout.STATE_DRAGGING:
+                    state = "STATE_DRAGGING";
+                    break;
+                case DrawerLayout.STATE_SETTLING:
+                    state = "STATE_SETTLING";
+                    break;
+                default:
+                    state = "unknown!";
+            }
+        }
+    };
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
