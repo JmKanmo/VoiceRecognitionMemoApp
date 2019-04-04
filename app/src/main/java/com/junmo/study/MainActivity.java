@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                     try {
-                        Thread.sleep(1);
+                        Thread.sleep(100);
                         cntFlag = true;
                         stt_Btn.performClick();
                         stt_Btn.performClick();
@@ -256,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
 
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 11, AudioManager.FLAG_PLAY_SOUND);
 
         //관호
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -630,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     //관호
     private void speak() {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -644,7 +645,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     private void speak(String message) {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -747,12 +748,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     @Override
     protected void onStop() {
-        if (clickFlag) {
-            stopListen();
-            stt_Btn.performClick();
-        }
-        volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         SharedPreferences.Editor editor1 = sharedPreferences1.edit();
         String keyword = stt_TextView.getText().toString();
@@ -775,6 +770,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             mTTS.stop();
             mTTS.shutdown();
         }
+        if (clickFlag) {
+            stopListen();
+            stt_Btn.performClick();
+        }
+        volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         super.onDestroy();
     }
 }
