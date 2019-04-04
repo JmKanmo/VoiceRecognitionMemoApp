@@ -185,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             String[] rs = new String[mResults.size()];
             mResults.toArray(rs);
             stt_TextView.append(rs[0] + "\n\n");
-            scrollBottom(stt_TextView);
             startListen();
         }
 
@@ -256,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
 
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 11, AudioManager.FLAG_PLAY_SOUND);
 
         //관호
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -425,7 +423,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder ad = new AlertDialog.Builder(context);
-                ad.setTitle("하고싶은 말을 입력하세요"); // 제목 설정
+                ad.setTitle("잠시만 읽어주세요:)"); // 제목 설정
+                ad.setIcon(R.drawable.smile_emotion);
 
                 final EditText ttsEdit = new EditText(context);
                 ttsEdit.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -631,7 +630,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     //관호
     private void speak() {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 13, AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -645,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     private void speak(String message) {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 13, AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -685,16 +684,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 return false;
             }
         });
-    }
-
-    private void scrollBottom(TextView textView) {
-        int lineTop = textView.getLayout().getLineTop(textView.getLineCount());
-        int scrollY = lineTop - textView.getHeight();
-        if (scrollY > 0) {
-            textView.scrollTo(0, scrollY);
-        } else {
-            textView.scrollTo(0, 0);
-        }
     }
 
     @Override
@@ -748,6 +737,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     @Override
     protected void onStop() {
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         SharedPreferences.Editor editor1 = sharedPreferences1.edit();
         String keyword = stt_TextView.getText().toString();
@@ -774,8 +764,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             stopListen();
             stt_Btn.performClick();
         }
-        volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         super.onDestroy();
     }
 }
