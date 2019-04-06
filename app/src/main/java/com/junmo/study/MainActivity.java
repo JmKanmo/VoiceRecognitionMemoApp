@@ -2,6 +2,7 @@ package com.junmo.study;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -256,12 +257,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-        //관호
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return;
         }
 
-        //관호
         for (String permission : perMissionList) {
             int check = checkCallingOrSelfPermission(permission);
 
@@ -461,7 +460,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
                             arrayList.add(text);
                             tts_TextView = new TextView(context);
-                            chatBubbleEvent(tts_TextView);
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
@@ -474,6 +472,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                     tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
                                 }
                             });
+                            chatBubbleEvent(tts_TextView);
                             speak(); //관호
                         }
                         //ttsEdit.setText(null);
@@ -491,7 +490,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             text = msg;
                             arrayList.add(text);
                             tts_TextView = new TextView(context);
-                            chatBubbleEvent(tts_TextView);
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
@@ -506,6 +504,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                     tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
                                 }
                             });
+                            chatBubbleEvent(tts_TextView);
                             Toast.makeText(getApplicationContext(), "입력되었습니다", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -627,7 +626,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         return true;
     }
 
-    //관호
     private void speak() {
         if (micFlag == true) stt_Btn.performClick();
         am.setStreamVolume(AudioManager.STREAM_MUSIC, 13, AudioManager.FLAG_PLAY_SOUND);
@@ -663,7 +661,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 AlertDialog.Builder ad = new AlertDialog.Builder(context);
                 final String message = textView.getText().toString();
                 ad.setIcon(android.R.drawable.presence_audio_online);
-                ad.setTitle(message);
+                ad.setTitle("Dialog");
+                ad.setMessage(message);
 
                 // 말하기 버튼 설정
                 ad.setNeutralButton("말하기", new DialogInterface.OnClickListener() {
@@ -673,10 +672,22 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     }
                 });
 
-                // 닫기 버튼 설정
-                ad.setNegativeButton("닫기", new DialogInterface.OnClickListener() {
+                ad.setNegativeButton("복사", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                        clipboardManager.setText(textView.getText());
+                        Toast.makeText(getApplicationContext(), "복사되었습니다", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // 삭제 버튼 설정
+                ad.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int idx = arrayList.indexOf(textView.getText());
+                        arrayList.set(idx, "삭제된 메시지");
+                        textView.setText("삭제된 메시지");
                     }
                 });
                 // 창 띄우기
@@ -707,7 +718,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
         for (int i = 0; i < arrayList.size(); i++) {
             tts_TextView = new TextView(context);
-            chatBubbleEvent(tts_TextView);
             tts_TextView.setText(arrayList.get(i));
             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
             tts_TextView.setId(++n);
@@ -720,6 +730,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     tts_ScrollView.scrollTo(0, tts_ScrollView.getChildAt(0).getBottom());
                 }
             });
+            chatBubbleEvent(tts_TextView);
         }
         db.execSQL("delete from mytable;");
         super.onResume();
