@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(70);
                         cntFlag = true;
                         stt_Btn.performClick();
                         stt_Btn.performClick();
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         tts_LinearLayout = findViewById(R.id.tts_linearlayout);
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        params.topMargin = Math.round(17 * dm.density);
+        params.topMargin = Math.round(18 * dm.density);
         stt_TextView = findViewById(R.id.stt_TextView);
 
         stt_TextView.setMovementMethod(new ScrollingMovementMethod());
@@ -642,7 +642,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);
-        mTTS.speak(arrayList.get(arrayList.size() - 1), TextToSpeech.QUEUE_FLUSH, null);
+
+        if (arrayList.size() > 0)
+            mTTS.speak(arrayList.get(arrayList.size() - 1), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     private void speak(String message) {
@@ -691,8 +693,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int idx = arrayList.indexOf(textView.getText());
-                        arrayList.set(idx, "삭제된 메시지");
-                        textView.setText("삭제된 메시지");
+                        arrayList.set(idx, "");
+                        textView.setText("");
                     }
                 });
                 // 창 띄우기
@@ -767,6 +769,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
         arrayList.clear();
         tts_LinearLayout.removeAllViews();
+
         super.onStop();
     }
 
