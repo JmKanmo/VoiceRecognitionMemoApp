@@ -199,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     };
 
     private void startListen() {
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_PLAY_SOUND);
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
         speechRecognizer.setRecognitionListener(listener);
         speechRecognizer.startListening(i);
@@ -422,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder ad = new AlertDialog.Builder(context);
-                ad.setTitle("잠시만 읽어주세요:)"); // 제목 설정
+                ad.setTitle("Write and Speak :)"); // 제목 설정
                 ad.setIcon(R.drawable.smile_emotion);
 
                 final EditText ttsEdit = new EditText(context);
@@ -526,20 +527,22 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             public void onClick(View v) {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
                 builder1.setTitle("텍스트 초기화");
-                builder1.setMessage("텍스트를 초기화하시겠습니까?").setCancelable(false).setNegativeButton("예",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                stt_TextView.setText("");
-                            }
-                        }).setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                builder1.setMessage("텍스트를 초기화하시겠습니까?");
+
+                builder1.setNegativeButton("예", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                        stt_TextView.setText("");
                     }
                 });
-                AlertDialog alertDialog2 = builder1.create();
-                alertDialog2.show();
+
+                builder1.setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder1.show();
             }
         });
 
@@ -548,22 +551,24 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             public void onClick(View v) {
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(context);
                 builder2.setTitle("텍스트 초기화");
-                builder2.setMessage("텍스트를 초기화하시겠습니까?").setCancelable(false).setNegativeButton("예",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                tts_LinearLayout.removeAllViews();
-                                arrayList.clear();
-                                text = null;
-                            }
-                        }).setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                builder2.setMessage("텍스트를 초기화하시겠습니까?");
+
+                builder2.setNegativeButton("예", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        tts_LinearLayout.removeAllViews();
+                        arrayList.clear();
+                        text = null;
                     }
                 });
-                AlertDialog alertDialog3 = builder2.create();
-                alertDialog3.show();
+
+                builder2.setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder2.show();
             }
         });
     }
@@ -637,7 +642,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);
-        mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        mTTS.speak(arrayList.get(arrayList.size() - 1), TextToSpeech.QUEUE_FLUSH, null);
     }
 
     private void speak(String message) {
