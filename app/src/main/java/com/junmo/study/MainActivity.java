@@ -44,6 +44,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -55,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     final Context context = this;
     String stt_file = "stt_file.db";
     String tts_file = "tts_file.db";
-    SharedPreferences sharedPreferences;
-    SharedPreferences sharedPreferences1;
+
+    SharedPreferences sharedPreferences, sharedPreferences1;
 
     ArrayList<String> arrayList;
 
@@ -66,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     AudioManager am;
     int volume;
 
-    int pitch_val = 50, speed_val = 50;
-    SeekBar pitch_bar, speed_bar;
+    int pitch_val = 50, speed_val = 50, volume_val = 10;
+    SeekBar pitch_bar, speed_bar, volume_bar;
 
     String[] perMissionList = {
             Manifest.permission.RECORD_AUDIO,
@@ -75,22 +77,18 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     };
 
     Intent i;
-    private boolean clickFlag = false;
-    private boolean micFlag = false;
-    private boolean cntFlag = false;
+    private boolean clickFlag = false, micFlag = false, cntFlag = false;
 
-    ImageView drawer_Btn;
-    ImageView tts_Btn;
-    ImageView stt_Btn;
-    ImageView menu_Btn;
+    ImageView drawer_Btn, tts_Btn, stt_Btn, menu_Btn;
     ImageView stt_Reset;
-    ImageView tts_Reset;
     ImageView tts_EditBtn;
+
     ScrollView tts_ScrollView;
+
     LinearLayout tts_LinearLayout;
     LinearLayout.LayoutParams params;
-    TextView tts_TextView;
-    TextView stt_TextView;
+
+    TextView tts_TextView, stt_TextView;
 
     int n;
     String text;
@@ -141,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                     try {
-                        Thread.sleep(70);
+                        Thread.sleep(100);
                         cntFlag = true;
                         stt_Btn.performClick();
                         stt_Btn.performClick();
@@ -185,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             ArrayList<String> mResults = results.getStringArrayList(key);
             String[] rs = new String[mResults.size()];
             mResults.toArray(rs);
-            stt_TextView.append(rs[0] + "\n\n");
+            stt_TextView.append(rs[0] + "\n");
             startListen();
         }
 
@@ -206,8 +204,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     }
 
     private void stopListen() {
-        speechRecognizer.cancel();
-        speechRecognizer.stopListening();
+        //speechRecognizer.cancel();
+        //speechRecognizer.stopListening();
         speechRecognizer.destroy();
     }
 
@@ -242,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         stt_Btn = findViewById(R.id.stt_Btn);
         tts_Btn = findViewById(R.id.tts_Btn);
         stt_Reset = findViewById(R.id.stt_reset);
-        tts_Reset = findViewById(R.id.tts_reset);
         tts_ScrollView = findViewById(R.id.tts_ScrollView);
         tts_LinearLayout = findViewById(R.id.tts_linearlayout);
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -250,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         params.topMargin = Math.round(18 * dm.density);
         stt_TextView = findViewById(R.id.stt_TextView);
 
+        stt_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
         stt_TextView.setMovementMethod(new ScrollingMovementMethod());
 
         i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -295,10 +293,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 else {
                     if (clickFlag) {
                         stt_Btn.setImageResource(R.drawable.onbtn);
-                        Toast.makeText(getApplicationContext(), "Mic ON", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Mic on", Toast.LENGTH_SHORT).show();
                     } else {
                         stt_Btn.setImageResource(R.drawable.offbtn);
-                        Toast.makeText(getApplicationContext(), "MIC OFF", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Mic off", Toast.LENGTH_SHORT).show();
                     }
                     am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_PLAY_SOUND);
                 }
@@ -357,10 +355,11 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 final View Viewlayout = inflater.inflate(R.layout.activity_dialog,
                         (ViewGroup) findViewById(R.id.layout_dialog));
 
-                final TextView pitch_txt = (TextView) Viewlayout.findViewById(R.id.pitch_txt); // txtItem1
-                final TextView speed_txt = (TextView) Viewlayout.findViewById(R.id.speed_txt); // txtItem2
+                final TextView pitch_txt = Viewlayout.findViewById(R.id.pitch_txt); // txtItem1
+                final TextView speed_txt = Viewlayout.findViewById(R.id.speed_txt); // txtItem2
+                final TextView volume_txt = Viewlayout.findViewById(R.id.volume_txt);
 
-                popDialog.setIcon(android.R.drawable.btn_star_big_on);
+                popDialog.setIcon(android.R.drawable.presence_audio_online);
                 popDialog.setTitle("확성기 조절하기");
                 popDialog.setView(Viewlayout);
 
@@ -404,8 +403,32 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     }
                 });
 
+                /// volume_bar 코드삽입
+
+                volume_bar = Viewlayout.findViewById(R.id.volume_bar);
+                volume_bar.setMax(15);
+
+                volume_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        volume_txt.setText("볼륨 : " + progress);
+                        volume_val = progress;
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+
                 pitch_bar.setProgress(pitch_val);
                 speed_bar.setProgress(speed_val);
+                volume_bar.setProgress(volume_val);
                 // Button OK
 
                 popDialog.setPositiveButton("완료",
@@ -464,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
-                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
                             tts_TextView.setLayoutParams(params);
                             tts_LinearLayout.addView(tts_TextView);
                             tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -494,7 +517,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
-                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
                             tts_TextView.setLayoutParams(params);
                             tts_LinearLayout.addView(tts_TextView);
                             ttsEdit.setText(null);
@@ -506,7 +529,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                 }
                             });
                             chatBubbleEvent(tts_TextView);
-                            Toast.makeText(getApplicationContext(), "입력되었습니다", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -543,32 +565,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     }
                 });
                 builder1.show();
-            }
-        });
-
-        tts_Reset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder2 = new AlertDialog.Builder(context);
-                builder2.setTitle("텍스트 초기화");
-                builder2.setMessage("텍스트를 초기화하시겠습니까?");
-
-                builder2.setNegativeButton("예", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        tts_LinearLayout.removeAllViews();
-                        arrayList.clear();
-                        text = null;
-                    }
-                });
-
-                builder2.setPositiveButton("아니요", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder2.show();
             }
         });
     }
@@ -632,8 +628,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     }
 
     private void speak() {
-        if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 13, AudioManager.FLAG_PLAY_SOUND);
+        String msg = arrayList.size() > 0 ? arrayList.get(arrayList.size() - 1) : null;
+
+        if (micFlag == true && msg != null) stt_Btn.performClick();
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -643,13 +641,13 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);
 
-        if (arrayList.size() > 0)
-            mTTS.speak(arrayList.get(arrayList.size() - 1), TextToSpeech.QUEUE_FLUSH, null);
+        //if (arrayList.size() > 0)  mTTS.speak(arrayList.get(arrayList.size() - 1), TextToSpeech.QUEUE_FLUSH, null);
+        mTTS.speak(msg, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     private void speak(String message) {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 13, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -665,40 +663,48 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         textView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                AlertDialog.Builder ad = new AlertDialog.Builder(context);
-                final String message = textView.getText().toString();
-                ad.setIcon(android.R.drawable.presence_audio_online);
-                ad.setTitle("Dialog");
-                ad.setMessage(message);
+                final CharSequence[] items = {"말하기", "공유", "복사", "삭제", "초기화"};
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        context);
 
-                // 말하기 버튼 설정
-                ad.setNeutralButton("말하기", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        speak(message);
-                    }
-                });
+                // 제목셋팅
+                alertDialogBuilder.setTitle("옵션 목록");
 
-                ad.setNegativeButton("복사", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                        clipboardManager.setText(textView.getText());
-                        Toast.makeText(getApplicationContext(), "복사되었습니다", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                // 삭제 버튼 설정
-                ad.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int idx = arrayList.indexOf(textView.getText());
-                        arrayList.set(idx, "");
-                        textView.setText("");
-                    }
-                });
-                // 창 띄우기
-                ad.show();
+                alertDialogBuilder.setItems(items,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int id) {
+                                switch (String.valueOf(items[id])) {
+                                    case "말하기":
+                                        final String message = textView.getText().toString();
+                                        speak(message);
+                                        break;
+                                    case "공유":
+                                        // 공유 동작 기능 ㄱㄱ
+                                        break;
+                                    case "복사":
+                                        final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        clipboardManager.setText(textView.getText());
+                                        Toast.makeText(getApplicationContext(), "복사되었습니다", Toast.LENGTH_SHORT).show();
+                                        break;
+                                    case "삭제":
+                                        int idx = arrayList.indexOf(textView.getText());
+                                        arrayList.remove(idx);
+                                        textView.setText("");
+                                        break;
+                                    case "초기화":
+                                        tts_LinearLayout.removeAllViews();
+                                        arrayList.clear();
+                                        text = null;
+                                        break;
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                // 다이얼로그 생성
+                AlertDialog alertDialog2 = alertDialogBuilder.create();
+                // 다이얼로그 보여주기
+                alertDialog2.show();
                 return false;
             }
         });
@@ -755,6 +761,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     @Override
     protected void onStop() {
+        if (clickFlag) {
+            stopListen();
+            stt_Btn.performClick();
+        }
         am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         SharedPreferences.Editor editor1 = sharedPreferences1.edit();
@@ -778,10 +788,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         if (mTTS != null) {
             mTTS.stop();
             mTTS.shutdown();
-        }
-        if (clickFlag) {
-            stopListen();
-            stt_Btn.performClick();
         }
         super.onDestroy();
     }

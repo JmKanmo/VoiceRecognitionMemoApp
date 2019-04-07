@@ -54,10 +54,9 @@
                 android:layout_marginLeft="18dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginRight="18dp"
-                android:layout_marginBottom="65dp"
+                android:layout_marginBottom="75dp"
                 android:gravity="bottom|left"
-                android:text=""
-                android:textSize="15dp" />
+                android:text="" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -68,19 +67,28 @@
                 <ImageView
                     android:id="@+id/stt_reset"
                     android:layout_width="51dp"
-                    android:layout_height="51dp"
+                    android:layout_height="40dp"
                     android:layout_alignParentLeft="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="15dp"
-                    android:layout_marginBottom="20dp" />
+                    android:layout_marginBottom="32dp"
+                    android:src="@drawable/refresh" />
+
+                <ImageView
+                    android:layout_width="51dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="65dp"
+                    android:layout_marginBottom="32dp"
+                    android:src="@drawable/store" />
 
                 <ImageView
                     android:id="@+id/stt_Btn"
-                    android:layout_width="55dp"
-                    android:layout_height="35dp"
+                    android:layout_width="51dp"
+                    android:layout_height="40dp"
                     android:layout_alignParentRight="true"
-                    android:layout_marginRight="15dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginRight="17dp"
+                    android:layout_marginBottom="32dp"
                     android:src="@drawable/offbtn" />
             </RelativeLayout>
         </RelativeLayout>
@@ -114,15 +122,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_above="@+id/bottom">
-
-                <ImageView
-                    android:id="@+id/tts_reset"
-                    android:layout_width="51dp"
-                    android:layout_height="51dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginLeft="10dp" />
-            </RelativeLayout>
+                android:layout_above="@+id/bottom"></RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/bottom"

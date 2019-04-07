@@ -40,4 +40,21 @@
         android:layout_alignParentLeft="true"
         android:layout_marginTop="16dp" />
 
+    <TextView
+        android:id="@+id/volume_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/speed_bar"
+        android:layout_alignLeft="@id/speed_txt"
+        android:layout_marginTop="16dp"
+        android:text="볼륨:" />
+
+    <SeekBar
+        android:id="@+id/volume_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/volume_txt"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="16dp" />
+
 </RelativeLayout>
