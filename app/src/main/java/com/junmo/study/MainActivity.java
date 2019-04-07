@@ -49,6 +49,12 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.Locale;
 
+/*
+안드로이드 어플리케이션 개발
+강준모
+ */
+
+
 public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener {
 
     DBHelper dbHelper;
@@ -101,22 +107,18 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         @Override
         public void onBeginningOfSpeech() {
-
         }
 
         @Override
         public void onRmsChanged(float rmsDB) {
-
         }
 
         @Override
         public void onBufferReceived(byte[] buffer) {
-
         }
 
         @Override
         public void onEndOfSpeech() {
-
         }
 
         @Override
@@ -283,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
+
         stt_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -307,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 else micFlag = false;
             }
         });
+
 
         drawer_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -344,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 return true;
             }
         });
+
 
         menu_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -442,6 +447,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
+
         tts_EditBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -536,6 +542,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 ad.show();
             }
         });
+
 
         tts_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -679,19 +686,27 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                         final String message = textView.getText().toString();
                                         speak(message);
                                         break;
+
                                     case "공유":
-                                        // 공유 동작 기능 ㄱㄱ
+                                        Intent share_Intent = new Intent(Intent.ACTION_SEND);
+                                        share_Intent.addCategory(Intent.CATEGORY_DEFAULT);
+                                        share_Intent.putExtra(Intent.EXTRA_TEXT, textView.getText());
+                                        share_Intent.setType("text/plain");
+                                        startActivity(Intent.createChooser(share_Intent, "공유하기"));
                                         break;
+
                                     case "복사":
                                         final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                                         clipboardManager.setText(textView.getText());
                                         Toast.makeText(getApplicationContext(), "복사되었습니다", Toast.LENGTH_SHORT).show();
                                         break;
+
                                     case "삭제":
                                         int idx = arrayList.indexOf(textView.getText());
                                         arrayList.remove(idx);
                                         textView.setText("");
                                         break;
+
                                     case "초기화":
                                         tts_LinearLayout.removeAllViews();
                                         arrayList.clear();
