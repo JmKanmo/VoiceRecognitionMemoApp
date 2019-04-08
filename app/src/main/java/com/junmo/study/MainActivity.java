@@ -54,7 +54,6 @@ import java.util.Locale;
 강준모
  */
 
-
 public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener {
 
     DBHelper dbHelper;
@@ -86,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     private boolean clickFlag = false, micFlag = false, cntFlag = false;
 
     ImageView drawer_Btn, tts_Btn, stt_Btn, menu_Btn;
-    ImageView stt_Reset;
+    ImageView stt_Reset, stt_Share;
     ImageView tts_EditBtn;
 
     ScrollView tts_ScrollView;
@@ -242,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         stt_Btn = findViewById(R.id.stt_Btn);
         tts_Btn = findViewById(R.id.tts_Btn);
         stt_Reset = findViewById(R.id.stt_reset);
+        stt_Share = findViewById(R.id.stt_share);
         tts_ScrollView = findViewById(R.id.tts_ScrollView);
         tts_LinearLayout = findViewById(R.id.tts_linearlayout);
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -572,6 +572,18 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     }
                 });
                 builder1.show();
+            }
+        });
+
+
+        stt_Share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent share_Intent = new Intent(Intent.ACTION_SEND);
+                share_Intent.addCategory(Intent.CATEGORY_DEFAULT);
+                share_Intent.putExtra(Intent.EXTRA_TEXT, stt_TextView.getText().toString().replace(System.getProperty("line.separator"), ""));
+                share_Intent.setType("text/plain");
+                startActivity(Intent.createChooser(share_Intent, "공유하기"));
             }
         });
     }
