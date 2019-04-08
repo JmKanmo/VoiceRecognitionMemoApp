@@ -82,6 +82,9 @@
                     android:layout_marginBottom="32dp"
                     android:src="@drawable/store" />
 
+
+
+
                 <ImageView
                     android:id="@+id/stt_Btn"
                     android:layout_width="51dp"

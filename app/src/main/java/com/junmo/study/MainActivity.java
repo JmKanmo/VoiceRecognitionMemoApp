@@ -493,7 +493,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
-                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
                             tts_TextView.setLayoutParams(params);
                             tts_LinearLayout.addView(tts_TextView);
                             tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -523,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             tts_TextView.setText(text);
                             tts_TextView.setBackgroundResource(R.drawable.chatbubble);
                             tts_TextView.setId(++n);
-                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
+                            tts_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
                             tts_TextView.setLayoutParams(params);
                             tts_LinearLayout.addView(tts_TextView);
                             ttsEdit.setText(null);
@@ -744,6 +744,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             String message = cursor.getString(1);
             arrayList.add(message);
         }
+
+        Log.d("TAG", String.valueOf(arrayList.size()));
+
         for (int i = 0; i < arrayList.size(); i++) {
             tts_TextView = new TextView(context);
             tts_TextView.setText(arrayList.get(i));
@@ -794,7 +797,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
         arrayList.clear();
         tts_LinearLayout.removeAllViews();
-
         super.onStop();
     }
 
