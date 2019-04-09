@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     Intent i;
     private boolean clickFlag = false, micFlag = false, cntFlag = false;
 
-    ImageView drawer_Btn, tts_Btn, stt_Btn, menu_Btn;
+    ImageView drawer_Btn, tts_Reset, stt_Btn, tts_Btn, menu_Btn;
     ImageView stt_Reset, stt_Share;
     ImageView tts_EditBtn;
 
@@ -238,8 +238,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         drawer_Btn = findViewById(R.id.drawer_btn);
         menu_Btn = findViewById(R.id.menu_btn);
         tts_EditBtn = findViewById(R.id.tts_Edit);
-        stt_Btn = findViewById(R.id.stt_Btn);
         tts_Btn = findViewById(R.id.tts_Btn);
+        stt_Btn = findViewById(R.id.stt_Btn);
+        tts_Reset = findViewById(R.id.tts_reset);
         stt_Reset = findViewById(R.id.stt_reset);
         stt_Share = findViewById(R.id.stt_share);
         tts_ScrollView = findViewById(R.id.tts_ScrollView);
@@ -278,13 +279,19 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     } else {
-                        tts_Btn.setEnabled(true);
                     }
                 } else {
                 }
             }
         });
 
+        tts_Btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String message = stt_TextView.getText().toString();
+                speak(message);
+            }
+        });
 
         stt_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -544,10 +551,28 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         });
 
 
-        tts_Btn.setOnClickListener(new View.OnClickListener() {
+        tts_Reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                speak();
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+                builder1.setTitle("텍스트 초기화");
+                builder1.setMessage("텍스트를 초기화하시겠습니까?");
+
+                builder1.setNegativeButton("예", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        tts_LinearLayout.removeAllViews();
+                        arrayList.clear();
+                        text = null;
+                    }
+                });
+                builder1.setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder1.show();
             }
         });
 
@@ -683,7 +708,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         textView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                final CharSequence[] items = {"말하기", "공유", "복사", "삭제", "초기화"};
+                final CharSequence[] items = {"말하기", "공유", "복사", "삭제"};
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                         context);
 
@@ -720,12 +745,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                         arrayList.remove(idx);
                                         textView.setText("");
                                         break;
-
-                                    case "초기화":
-                                        tts_LinearLayout.removeAllViews();
-                                        arrayList.clear();
-                                        text = null;
-                                        break;
                                 }
                                 dialog.dismiss();
                             }
@@ -761,7 +780,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
 
         Log.d("TAG", String.valueOf(arrayList.size()));
-        Log.d("TAG", "onResume");
 
         tts_LinearLayout.removeAllViews();
 
@@ -810,7 +828,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         editor.commit();
         editor1.commit();
 
-        Log.d("TAG", "onStop");
 
         for (int i = 0; i < arrayList.size(); i++) {
             db.execSQL("insert into mytable (message) values('" + arrayList.get(i) + "');");
