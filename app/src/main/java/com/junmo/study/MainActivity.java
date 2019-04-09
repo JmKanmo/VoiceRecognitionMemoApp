@@ -584,6 +584,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 share_Intent.putExtra(Intent.EXTRA_TEXT, stt_TextView.getText().toString().replace(System.getProperty("line.separator"), ""));
                 share_Intent.setType("text/plain");
                 startActivity(Intent.createChooser(share_Intent, "공유하기"));
+                onStop();
             }
         });
     }
@@ -705,6 +706,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                         share_Intent.putExtra(Intent.EXTRA_TEXT, textView.getText());
                                         share_Intent.setType("text/plain");
                                         startActivity(Intent.createChooser(share_Intent, "공유하기"));
+                                        onStop();
                                         break;
 
                                     case "복사":
@@ -751,6 +753,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         text = sharedPreferences1.getString("text", "");
 
         arrayList = new ArrayList<>();
+
         Cursor cursor = db.rawQuery("select* from mytable;", null);
         while (cursor.moveToNext()) {
             String message = cursor.getString(1);
@@ -758,6 +761,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
 
         Log.d("TAG", String.valueOf(arrayList.size()));
+        Log.d("TAG", "onResume");
+
+        tts_LinearLayout.removeAllViews();
 
         for (int i = 0; i < arrayList.size(); i++) {
             tts_TextView = new TextView(context);
@@ -804,11 +810,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         editor.commit();
         editor1.commit();
 
+        Log.d("TAG", "onStop");
+
         for (int i = 0; i < arrayList.size(); i++) {
             db.execSQL("insert into mytable (message) values('" + arrayList.get(i) + "');");
         }
         arrayList.clear();
-        tts_LinearLayout.removeAllViews();
         super.onStop();
     }
 
