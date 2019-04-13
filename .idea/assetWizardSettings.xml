@@ -18,7 +18,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/D:/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/av/ic_volume_up_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/D:/android-studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_note_add_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -28,7 +28,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="speaker" />
+                            <entry key="outputName" value="add_note" />
                             <entry key="sourceFile" value="C:\Users\준모" />
                           </map>
                         </option>

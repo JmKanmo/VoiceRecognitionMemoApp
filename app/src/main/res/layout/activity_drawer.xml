@@ -23,12 +23,12 @@
                 android:layout_height="55dp"
                 android:background="#E3FF9905"
                 android:gravity="center"
-                android:text="추가기능"
+                android:text="INDEX"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp" />
 
             <LinearLayout
-                android:id="@+id/sign_language_layout"
+                android:id="@+id/find_memo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -42,18 +42,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@null"
-                    android:src="@drawable/signcam" />
+                    android:src="@drawable/find" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="수화로 말하기"
+                    android:text="메모찾기"
                     android:textColor="#6c8e5e" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/mode_layout"
+                android:id="@+id/select_language"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -73,7 +73,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="스마트폰 모드"
+                    android:text="언어선택"
                     android:textColor="#6c8e5e" />
             </LinearLayout>
 

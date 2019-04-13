@@ -65,16 +65,17 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/stt_reset"
+                    android:id="@+id/stt_add"
                     android:layout_width="51dp"
                     android:layout_height="40dp"
                     android:layout_alignParentLeft="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="15dp"
                     android:layout_marginBottom="32dp"
-                    android:src="@drawable/refresh" />
+                    android:src="@drawable/add_note" />
 
                 <ImageView
+                    android:id="@+id/stt_store"
                     android:layout_width="51dp"
                     android:layout_height="40dp"
                     android:layout_alignParentLeft="true"

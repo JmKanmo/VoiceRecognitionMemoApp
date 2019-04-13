@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteException;
 import android.inputmethodservice.InputMethodService;
 import android.media.AudioManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -44,14 +45,18 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 /*
-안드로이드 어플리케이션 개발
-강준모
+    안드로이드 어플리케이션 개발
+    JM_Kan_mo
  */
 
 public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener {
@@ -61,11 +66,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     final Context context = this;
     String stt_file = "stt_file.db";
-    String tts_file = "tts_file.db";
 
     SharedPreferences sharedPreferences, sharedPreferences1;
 
-    ArrayList<String> arrayList;
+    ArrayList<String> arrayList, arrayList_1;
 
     private TextToSpeech mTTS;
     SpeechRecognizer speechRecognizer;
@@ -82,10 +86,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     };
 
     Intent i;
-    private boolean clickFlag = false, micFlag = false, cntFlag = false;
+    private boolean clickFlag = false, micFlag = false, speakerFlag = false, cntFlag = false;
 
     ImageView drawer_Btn, tts_Reset, stt_Btn, tts_Btn, menu_Btn;
-    ImageView stt_Reset, stt_Share;
+    ImageView stt_Add, stt_Share, stt_Store;
     ImageView tts_EditBtn;
 
     ScrollView tts_ScrollView;
@@ -95,7 +99,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     TextView tts_TextView, stt_TextView;
 
-    int n;
+    int n, memo_idx;
+    final long FINISH_INTERVAL_TIME = 2000;
+    long backPressedTime;
     String text;
 
     RecognitionListener listener = new RecognitionListener() {
@@ -231,8 +237,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final View drawerView = (View) findViewById(R.id.drawer);
 
-        final LinearLayout sign_language_layout = findViewById(R.id.sign_language_layout);
-        final LinearLayout mode_layout = findViewById(R.id.mode_layout);
+        final LinearLayout find_memo_layout = findViewById(R.id.find_memo);
+        final LinearLayout select_language_layout = findViewById(R.id.select_language);
         final LinearLayout exit_layout = findViewById(R.id.exit_layout);
 
         drawer_Btn = findViewById(R.id.drawer_btn);
@@ -241,8 +247,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         tts_Btn = findViewById(R.id.tts_Btn);
         stt_Btn = findViewById(R.id.stt_Btn);
         tts_Reset = findViewById(R.id.tts_reset);
-        stt_Reset = findViewById(R.id.stt_reset);
+        stt_Add = findViewById(R.id.stt_add);
         stt_Share = findViewById(R.id.stt_share);
+        stt_Store = findViewById(R.id.stt_store);
         tts_ScrollView = findViewById(R.id.tts_ScrollView);
         tts_LinearLayout = findViewById(R.id.tts_linearlayout);
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -288,8 +295,16 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         tts_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String message = stt_TextView.getText().toString();
-                speak(message);
+                if (speakerFlag == false) {
+                    final String message = stt_TextView.getText().toString();
+                    speak(message);
+                    tts_Btn.setImageResource(R.drawable.speaker_off);
+                    speakerFlag = true;
+                } else {
+                    mTTS.stop();
+                    speakerFlag = false;
+                    tts_Btn.setImageResource(R.drawable.speaker);
+                }
             }
         });
 
@@ -318,7 +333,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-
         drawer_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -326,17 +340,71 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-        sign_language_layout.setOnClickListener(new View.OnClickListener() {
+
+        find_memo_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "수화로 말하기 클릭!", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                final String[] items = new String[arrayList_1.size() + 1];
+                final String[] memo = new String[1];
+
+                builder.setTitle("메모저장목록");
+
+                for (int i = 0; i < items.length; i++) {
+                    if (i == 0) {
+                        items[0] = "작성중인 메모";
+                    } else {
+                        String date = arrayList_1.get(arrayList_1.size() - i).split("/")[0];
+                        items[i] = "메모 " + i + " - " + date;
+                    }
+                }
+
+                builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) {
+                            dialog.dismiss();
+                        } else {
+                            memo_idx = arrayList_1.size() - which;
+                            if (arrayList_1.isEmpty() != true) {
+                                memo[0] = arrayList_1.get(memo_idx).split("/")[1];
+                            }
+                        }
+                    }
+                });
+
+                builder.setNeutralButton("선택", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (memo[0] != null) {
+                            stt_TextView.setText(memo[0]);
+                        }
+                    }
+                });
+
+                builder.setNegativeButton("삭제", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (arrayList_1.isEmpty() != true) {
+                            arrayList_1.remove(memo_idx);
+                        }
+                    }
+                });
+
+                builder.setPositiveButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                builder.create();
+                builder.show();
             }
         });
 
-        mode_layout.setOnClickListener(new View.OnClickListener() {
+        select_language_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "스마트폰모드 클릭!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "언어선택 클릭!", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -425,6 +493,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         volume_txt.setText("볼륨 : " + progress);
                         volume_val = progress;
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
                     }
 
                     @Override
@@ -534,7 +603,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                             tts_TextView.setLayoutParams(params);
                             tts_LinearLayout.addView(tts_TextView);
                             ttsEdit.setText(null);
-
                             tts_TextView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                                 @Override
                                 public void onGlobalLayout() {
@@ -549,7 +617,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 ad.show();
             }
         });
-
 
         tts_Reset.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -576,12 +643,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-        stt_Reset.setOnClickListener(new View.OnClickListener() {
+        stt_Add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-                builder1.setTitle("텍스트 초기화");
-                builder1.setMessage("텍스트를 초기화하시겠습니까?");
+                builder1.setTitle("새 메모작성");
+                builder1.setMessage("메모를 새로 작성하겠습니까?");
 
                 builder1.setNegativeButton("예", new DialogInterface.OnClickListener() {
                     @Override
@@ -600,7 +667,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
-
         stt_Share.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -610,6 +676,18 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 share_Intent.setType("text/plain");
                 startActivity(Intent.createChooser(share_Intent, "공유하기"));
                 onStop();
+            }
+        });
+
+        stt_Store.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String text = stt_TextView.getText().toString();
+                if (text.isEmpty() != true) {
+                    String time = new SimpleDateFormat("yy.MM.dd, HH시mm분").format(new Date(System.currentTimeMillis()));
+                    arrayList_1.add(time + "/" + text);
+                    Toast.makeText(getApplicationContext(), "저장됨", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -623,7 +701,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         }
 
         public void onDrawerSlide(View drawerView, float slideOffset) {
-
         }
 
         public void onDrawerStateChanged(int newState) {
@@ -643,6 +720,19 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         }
     };
+
+    @Override
+    public void onBackPressed() {
+        long tempTime = System.currentTimeMillis();
+        long intervalTime = tempTime - backPressedTime;
+
+        if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
+            super.onBackPressed();
+        } else {
+            backPressedTime = tempTime;
+            Toast.makeText(this, "한번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -767,20 +857,31 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     protected void onResume() {
         volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(stt_file, Activity.MODE_PRIVATE);
-        sharedPreferences1 = getSharedPreferences(tts_file, Activity.MODE_PRIVATE);
+        sharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(context);
         stt_TextView.setText(sharedPreferences.getString("keyword", ""));
-        text = sharedPreferences1.getString("text", "");
-
+        String json = sharedPreferences1.getString("keyword_1", null);
         arrayList = new ArrayList<>();
+        arrayList_1 = new ArrayList<>();
+
+        if (json != null) {
+            try {
+                JSONArray jsonArray = new JSONArray(json);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    arrayList_1.add(jsonArray.optString(i));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
 
         Cursor cursor = db.rawQuery("select* from mytable;", null);
+
         while (cursor.moveToNext()) {
             String message = cursor.getString(1);
             arrayList.add(message);
         }
 
         Log.d("TAG", String.valueOf(arrayList.size()));
-
         tts_LinearLayout.removeAllViews();
 
         for (int i = 0; i < arrayList.size(); i++) {
@@ -820,19 +921,31 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             stt_Btn.performClick();
         }
         am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
+        mTTS.stop();
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        SharedPreferences.Editor editor1 = sharedPreferences1.edit();
         String keyword = stt_TextView.getText().toString();
         editor.putString("keyword", keyword);
-        editor1.putString("text", text);
-        editor.commit();
-        editor1.commit();
+        editor.apply();
 
+        SharedPreferences.Editor editor1 = sharedPreferences1.edit();
+        JSONArray jsonArray = new JSONArray();
+
+        for (int i = 0; i < arrayList_1.size(); i++) {
+            jsonArray.put(arrayList_1.get(i));
+        }
+        if (arrayList_1.isEmpty() != true) {
+            editor1.putString("keyword_1", jsonArray.toString());
+        } else {
+            editor1.putString("keyword_1", null);
+        }
+        editor1.apply();
 
         for (int i = 0; i < arrayList.size(); i++) {
             db.execSQL("insert into mytable (message) values('" + arrayList.get(i) + "');");
         }
         arrayList.clear();
+        arrayList_1.clear();
         super.onStop();
     }
 
