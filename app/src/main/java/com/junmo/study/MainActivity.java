@@ -682,12 +682,29 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         stt_Store.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = stt_TextView.getText().toString();
-                if (text.isEmpty() != true) {
-                    String time = new SimpleDateFormat("yy.MM.dd, HH시mm분").format(new Date(System.currentTimeMillis()));
-                    arrayList_1.add(time + "/" + text);
-                    Toast.makeText(getApplicationContext(), "저장됨", Toast.LENGTH_SHORT).show();
-                }
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+                builder1.setTitle("메모저장");
+                builder1.setMessage("메모를 저장하겠습니까?");
+
+                builder1.setNegativeButton("예", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String text = stt_TextView.getText().toString();
+                        if (text.isEmpty() != true) {
+                            String time = new SimpleDateFormat("yy.MM.dd, HH시mm분").format(new Date(System.currentTimeMillis()));
+                            arrayList_1.add(time + "/" + text);
+                            Toast.makeText(getApplicationContext(), "저장됨", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                builder1.setPositiveButton("아니요", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder1.show();
             }
         });
     }
