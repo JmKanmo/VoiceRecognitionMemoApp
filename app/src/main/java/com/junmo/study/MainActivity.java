@@ -308,6 +308,18 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         });
 
+        stt_TextView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (stt_TextView.getText().toString().isEmpty() != true) {
+                    final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    clipboardManager.setText(stt_TextView.getText().toString());
+                    Toast.makeText(getApplicationContext(), "복사되었습니다", Toast.LENGTH_SHORT).show();
+                }
+                return false;
+            }
+        });
+
         stt_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
