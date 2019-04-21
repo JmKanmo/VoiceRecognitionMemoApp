@@ -2,4 +2,4 @@
 
 Based on JAVA Language , Google's STT,TTS open API
 
-To help deaf's communication. But everyone can use it.
+To help Hearing-impaired'communication. But everyone can use it.
