@@ -63,11 +63,14 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     DBHelper dbHelper;
     SQLiteDatabase db;
+    LanguageTable languageTable = new LanguageTable();
+    String key_language = "", value_language = "";
+    TextView text_Language;
 
     final Context context = this;
     String stt_file = "stt_file.db";
 
-    SharedPreferences sharedPreferences, sharedPreferences1;
+    SharedPreferences sharedPreferences, sharedPreferences1, sharedPreferences2, sharedPreferences3;
 
     ArrayList<String> arrayList, arrayList_1;
 
@@ -236,7 +239,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final View drawerView = (View) findViewById(R.id.drawer);
-
         final LinearLayout find_memo_layout = findViewById(R.id.find_memo);
         final LinearLayout select_language_layout = findViewById(R.id.select_language);
         final LinearLayout exit_layout = findViewById(R.id.exit_layout);
@@ -256,14 +258,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         DisplayMetrics dm = getResources().getDisplayMetrics();
         params.topMargin = Math.round(18 * dm.density);
         stt_TextView = findViewById(R.id.stt_TextView);
-
         stt_TextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18f);
         stt_TextView.setMovementMethod(new ScrollingMovementMethod());
-
+        text_Language = findViewById(R.id.text_language);
         i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         i.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = "ko-KR");
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -416,7 +416,26 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         select_language_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "언어선택 클릭!", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+                builder.setTitle("언어선택");
+
+                builder.setItems(languageTable.keys, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = languageTable.values[which]);
+                        text_Language.setText(key_language = languageTable.keys[which].split(" ")[0]);
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setPositiveButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                builder.create();
+                builder.show();
             }
         });
 
@@ -887,8 +906,13 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(stt_file, Activity.MODE_PRIVATE);
         sharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences2 = getSharedPreferences("value_lang", Activity.MODE_PRIVATE);
+        sharedPreferences3 = getSharedPreferences("key_lang", Activity.MODE_PRIVATE);
         stt_TextView.setText(sharedPreferences.getString("keyword", ""));
         String json = sharedPreferences1.getString("keyword_1", null);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = sharedPreferences2.getString("value_language", ""));
+        text_Language.setText(key_language = sharedPreferences3.getString("key_language", ""));
+        text_Language.setText(key_language = key_language.isEmpty() ? "Korean" : key_language);
         arrayList = new ArrayList<>();
         arrayList_1 = new ArrayList<>();
 
@@ -959,6 +983,14 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
         SharedPreferences.Editor editor1 = sharedPreferences1.edit();
         JSONArray jsonArray = new JSONArray();
+
+        SharedPreferences.Editor editor2 = sharedPreferences2.edit();
+        editor2.putString("value_language", value_language);
+        editor2.apply();
+
+        SharedPreferences.Editor editor3 = sharedPreferences3.edit();
+        editor3.putString("key_language", key_language);
+        editor3.apply();
 
         for (int i = 0; i < arrayList_1.size(); i++) {
             jsonArray.put(arrayList_1.get(i));
