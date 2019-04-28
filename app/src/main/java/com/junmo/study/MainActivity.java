@@ -11,11 +11,11 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.inputmethodservice.InputMethodService;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -35,7 +35,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -47,12 +46,10 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 /*
     안드로이드 어플리케이션 개발
@@ -282,12 +279,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
-                    int result = mTTS.setLanguage(Locale.KOREAN);
-
+                    int result = languageTable.setMTTSLanguage(mTTS, key_language);
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    } else {
                     }
-                } else {
                 }
             }
         });
@@ -331,6 +325,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     if (clickFlag) {
                         stt_Btn.setImageResource(R.drawable.onbtn);
                         Toast.makeText(getApplicationContext(), "Mic on", Toast.LENGTH_SHORT).show();
+                        if (isNetworkConnected() != true && key_language.equals("Korean") != true) {
+                            Toast.makeText(getApplicationContext(), "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_LONG).show();
+                        }
                     } else {
                         stt_Btn.setImageResource(R.drawable.offbtn);
                         Toast.makeText(getApplicationContext(), "Mic off", Toast.LENGTH_SHORT).show();
@@ -425,6 +422,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     public void onClick(DialogInterface dialog, int which) {
                         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = languageTable.values[which]);
                         text_Language.setText(key_language = languageTable.keys[which].split(" ")[0]);
+                        languageTable.setMTTSLanguage(mTTS, key_language);
+                        if (isNetworkConnected() != true && key_language.equals("Korean") != true) {
+                            Toast.makeText(getApplicationContext(), "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_LONG).show();
+                        }
                         dialog.dismiss();
                     }
                 });
@@ -896,6 +897,12 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         });
     }
 
+    boolean isNetworkConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo == null ? false : true;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -913,6 +920,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = sharedPreferences2.getString("value_language", ""));
         text_Language.setText(key_language = sharedPreferences3.getString("key_language", ""));
         text_Language.setText(key_language = key_language.isEmpty() ? "Korean" : key_language);
+        languageTable.setMTTSLanguage(mTTS, key_language);
         arrayList = new ArrayList<>();
         arrayList_1 = new ArrayList<>();
 
