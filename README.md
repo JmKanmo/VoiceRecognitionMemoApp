@@ -1,7 +1,5 @@
 # Android_Studio_Project
 
-This application is developed to help deaf people's Comunication. 
+Based on JAVA Language , Google's STT,TTS open API
 
-Based on Google's STT,TTS API and Open cv technologies. 
-
-And also it's developing now :) 
+To help Hearing-impaired'communication. But everyone can use it.
