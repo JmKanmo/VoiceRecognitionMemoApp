@@ -3,6 +3,8 @@ package com.junmo.study;
 import android.app.Activity;
 import android.speech.tts.TextToSpeech;
 
+import org.w3c.dom.Text;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -69,42 +71,38 @@ public class LanguageTable extends Activity {
         //hashMap.values().toArray(values);
     }
 
-    int setMTTSLanguage(TextToSpeech mTTS, String language) {
-        int result;
-        switch (language) {
-            case "Korean":
-                result = mTTS.setLanguage(Locale.KOREAN);
-                break;
-            case "Chinese":
-                result = mTTS.setLanguage(Locale.CHINESE);
-                break;
-            case "Thai":
-                result = mTTS.setLanguage(Locale.TAIWAN);
-                break;
-            case "Japanese":
-                result = mTTS.setLanguage(Locale.JAPANESE);
-                break;
-            case "Italian":
-                result = mTTS.setLanguage(Locale.ITALIAN);
-                break;
-            case "French":
-                result = mTTS.setLanguage(Locale.FRANCE);
-                break;
-            case "English (US)":
-                result = mTTS.setLanguage(Locale.US);
-                break;
-            case "English (UK)":
-                result = mTTS.setLanguage(Locale.UK);
-                break;
-            case "English (Canada)":
-                result = mTTS.setLanguage(Locale.CANADA);
-                break;
-            case "German":
-                result = mTTS.setLanguage(Locale.GERMAN);
-                break;
-            default:
-                result = mTTS.setLanguage(Locale.getDefault());
-                break;
+    int setMTTSLanguage(TextToSpeech textToSpeech, String key_language) {
+        int result = 0;
+
+        if (key_language.equals("Korean")) {
+            result = textToSpeech.setLanguage(Locale.KOREAN);
+        } else if (key_language.equals("Chinese")) {
+            result = textToSpeech.setLanguage(Locale.CHINESE);
+        } else if (key_language.equals("Thai")) {
+            result = textToSpeech.setLanguage(Locale.TAIWAN);
+        } else if (key_language.equals("Japanese")) {
+            result = textToSpeech.setLanguage(Locale.JAPANESE);
+        } else if (key_language.equals("Italian")) {
+            result = textToSpeech.setLanguage(Locale.ITALIAN);
+        } else if (key_language.equals("French")) {
+            result = textToSpeech.setLanguage(Locale.FRANCE);
+        } else if (key_language.equals("English (US)")) {
+            result = textToSpeech.setLanguage(Locale.US);
+        } else if (key_language.equals("English (UK)")) {
+            result = textToSpeech.setLanguage(Locale.UK);
+        } else if (key_language.equals("English (Canada)")) {
+            result = textToSpeech.setLanguage(Locale.CANADA);
+        } else if (key_language.equals("German")) {
+            result = textToSpeech.setLanguage(Locale.GERMAN);
+        } else {
+            result = textToSpeech.setLanguage(Locale.US);
+        }
+        if (result == TextToSpeech.LANG_MISSING_DATA
+                || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+            if (key_language.equals("Chinese") || key_language.equals("Japanese"))
+                result = textToSpeech.setLanguage(Locale.KOREAN);
+            else
+                result = textToSpeech.setLanguage(Locale.US);
         }
         return result;
     }

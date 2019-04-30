@@ -50,13 +50,14 @@ import org.json.JSONException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 /*
     안드로이드 어플리케이션 개발
     JM_Kan_mo
  */
 
-public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener {
+public class MainActivity extends AppCompatActivity implements TextView.OnEditorActionListener, TextToSpeech.OnInitListener {
 
     DBHelper dbHelper;
     SQLiteDatabase db;
@@ -75,9 +76,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     SpeechRecognizer speechRecognizer;
 
     AudioManager am;
-    int volume;
 
-    int pitch_val = 50, speed_val = 50, volume_val = 10;
+    int pitch_val = 50, speed_val = 50, volume_val = 0;
     SeekBar pitch_bar, speed_bar, volume_bar;
 
     String[] perMissionList = {
@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     final long FINISH_INTERVAL_TIME = 2000;
     long backPressedTime;
     String text;
+
 
     RecognitionListener listener = new RecognitionListener() {
 
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     };
 
     private void startListen() {
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
         speechRecognizer.setRecognitionListener(listener);
         speechRecognizer.startListening(i);
@@ -275,16 +276,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             }
         }
 
-        mTTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    int result = languageTable.setMTTSLanguage(mTTS, key_language);
-                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    }
-                }
-            }
-        });
+        mTTS = new TextToSpeech(this, this);
 
         tts_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -332,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                         stt_Btn.setImageResource(R.drawable.offbtn);
                         Toast.makeText(getApplicationContext(), "Mic off", Toast.LENGTH_SHORT).show();
                     }
-                    am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_PLAY_SOUND);
+                    am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                 }
                 if (clickFlag) startListen();
                 else stopListen();
@@ -520,12 +512,15 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 volume_bar = Viewlayout.findViewById(R.id.volume_bar);
                 volume_bar.setMax(15);
 
+                volume_bar.setProgress(volume_val);
+                volume_txt.setText("볼륨 : " + volume_val);
+
                 volume_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         volume_txt.setText("볼륨 : " + progress);
                         volume_val = progress;
-                        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                     }
 
                     @Override
@@ -595,7 +590,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                         } else {
                             text = msg;
                             if (micFlag == true) stt_Btn.performClick();
-                            am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_PLAY_SOUND);
+                            am.setStreamVolume(AudioManager.STREAM_MUSIC, 10, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                             arrayList.add(text);
                             tts_TextView = new TextView(context);
                             tts_TextView.setText(text);
@@ -784,6 +779,32 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        AudioManager mAudioManager =
+                (AudioManager) getSystemService(AUDIO_SERVICE);
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                        AudioManager.ADJUST_RAISE,
+                        AudioManager.FLAG_SHOW_UI);
+                volume_val = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                return true;
+
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                        AudioManager.ADJUST_LOWER,
+                        AudioManager.FLAG_SHOW_UI);
+                volume_val = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                return true;
+
+            case KeyEvent.KEYCODE_BACK:
+                onBackPressed();
+                return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         return false;
     }
@@ -815,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         String msg = arrayList.size() > 0 ? arrayList.get(arrayList.size() - 1) : null;
 
         if (micFlag == true && msg != null) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -831,7 +852,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     private void speak(String message) {
         if (micFlag == true) stt_Btn.performClick();
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
 
         float pitch = (pitch_bar == null) ? pitch_val / 50 : (float) pitch_bar.getProgress() / 50;
         if (pitch < 0.1) pitch = 0.1f;
@@ -910,7 +931,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
     @Override
     protected void onResume() {
-        volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volume_val = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(stt_file, Activity.MODE_PRIVATE);
         sharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences2 = getSharedPreferences("value_lang", Activity.MODE_PRIVATE);
@@ -920,7 +941,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = sharedPreferences2.getString("value_language", ""));
         text_Language.setText(key_language = sharedPreferences3.getString("key_language", ""));
         text_Language.setText(key_language = key_language.isEmpty() ? "Korean" : key_language);
-        languageTable.setMTTSLanguage(mTTS, key_language);
         arrayList = new ArrayList<>();
         arrayList_1 = new ArrayList<>();
 
@@ -981,7 +1001,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             stopListen();
             stt_Btn.performClick();
         }
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_PLAY_SOUND);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         mTTS.stop();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -1025,6 +1045,13 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             mTTS.shutdown();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            languageTable.setMTTSLanguage(mTTS, key_language);
+        }
     }
 }
 
