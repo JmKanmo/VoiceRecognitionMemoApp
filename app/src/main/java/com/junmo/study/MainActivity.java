@@ -15,7 +15,9 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -76,9 +78,10 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     SpeechRecognizer speechRecognizer;
 
     AudioManager am;
+    VolumeObserver volumeObserver;
 
-    int pitch_val = 50, speed_val = 50, volume_val = 0;
-    SeekBar pitch_bar, speed_bar, volume_bar;
+    static int pitch_val = 50, speed_val = 50, prevolume_val = 0, volume_val = 0;
+    SeekBar pitch_bar, speed_bar;
 
     String[] perMissionList = {
             Manifest.permission.RECORD_AUDIO,
@@ -264,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, value_language = "ko-KR");
         am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return;
         }
@@ -316,15 +320,44 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                 else {
                     if (clickFlag) {
                         stt_Btn.setImageResource(R.drawable.onbtn);
-                        Toast.makeText(getApplicationContext(), "Mic on", Toast.LENGTH_SHORT).show();
+                        prevolume_val = volume_val;
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                         if (isNetworkConnected() != true && key_language.equals("Korean") != true) {
-                            Toast.makeText(getApplicationContext(), "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_LONG).show();
+                            final Toast toast = Toast.makeText(context, "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_SHORT);
+                            toast.show();
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toast.cancel();
+                                }
+                            }, 1000);
+
                         }
+                        final Toast toast = Toast.makeText(context, "Mic on", Toast.LENGTH_SHORT);
+                        toast.show();
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                toast.cancel();
+                            }
+                        }, 700);
                     } else {
                         stt_Btn.setImageResource(R.drawable.offbtn);
-                        Toast.makeText(getApplicationContext(), "Mic off", Toast.LENGTH_SHORT).show();
+                        volume_val = prevolume_val;
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+                        final Toast toast = Toast.makeText(context, "Mic off", Toast.LENGTH_SHORT);
+                        toast.show();
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                toast.cancel();
+                            }
+                        }, 700);
                     }
-                    am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+
                 }
                 if (clickFlag) startListen();
                 else stopListen();
@@ -416,7 +449,16 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                         text_Language.setText(key_language = languageTable.keys[which].split(" ")[0]);
                         languageTable.setMTTSLanguage(mTTS, key_language);
                         if (isNetworkConnected() != true && key_language.equals("Korean") != true) {
-                            Toast.makeText(getApplicationContext(), "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_LONG).show();
+                            final Toast toast = Toast.makeText(context, "네트워크에 연결되어 있지 않습니다", Toast.LENGTH_SHORT);
+                            toast.show();
+
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toast.cancel();
+                                }
+                            }, 1000);
                         }
                         dialog.dismiss();
                     }
@@ -461,7 +503,6 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
 
                 final TextView pitch_txt = Viewlayout.findViewById(R.id.pitch_txt); // txtItem1
                 final TextView speed_txt = Viewlayout.findViewById(R.id.speed_txt); // txtItem2
-                final TextView volume_txt = Viewlayout.findViewById(R.id.volume_txt);
 
                 popDialog.setIcon(android.R.drawable.presence_audio_online);
                 popDialog.setTitle("확성기 조절하기");
@@ -507,36 +548,9 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                     }
                 });
 
-                /// volume_bar 코드삽입
-
-                volume_bar = Viewlayout.findViewById(R.id.volume_bar);
-                volume_bar.setMax(15);
-
-                volume_bar.setProgress(volume_val);
-                volume_txt.setText("볼륨 : " + volume_val);
-
-                volume_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        volume_txt.setText("볼륨 : " + progress);
-                        volume_val = progress;
-                        am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-
-                    }
-                });
-
                 pitch_bar.setProgress(pitch_val);
                 speed_bar.setProgress(speed_val);
-                volume_bar.setProgress(volume_val);
+
                 // Button OK
 
                 popDialog.setPositiveButton("완료",
@@ -555,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder ad = new AlertDialog.Builder(context);
-                ad.setTitle("Write and Speak :)"); // 제목 설정
+                ad.setTitle("Input and Speak :)"); // 제목 설정
                 ad.setIcon(R.drawable.smile_emotion);
 
                 final EditText ttsEdit = new EditText(context);
@@ -774,34 +788,17 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             super.onBackPressed();
         } else {
             backPressedTime = tempTime;
-            Toast.makeText(this, "한번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show();
+            final Toast toast = Toast.makeText(context, "한번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT);
+            toast.show();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, 1000);
+
         }
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        AudioManager mAudioManager =
-                (AudioManager) getSystemService(AUDIO_SERVICE);
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_VOLUME_UP:
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                        AudioManager.ADJUST_RAISE,
-                        AudioManager.FLAG_SHOW_UI);
-                volume_val = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                return true;
-
-            case KeyEvent.KEYCODE_VOLUME_DOWN:
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                        AudioManager.ADJUST_LOWER,
-                        AudioManager.FLAG_SHOW_UI);
-                volume_val = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                return true;
-
-            case KeyEvent.KEYCODE_BACK:
-                onBackPressed();
-                return true;
-        }
-        return false;
     }
 
     @Override
@@ -904,6 +901,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
                                         int idx = arrayList.indexOf(textView.getText());
                                         arrayList.remove(idx);
                                         textView.setText("");
+                                        textView.setLongClickable(false);
                                         break;
                                 }
                                 dialog.dismiss();
@@ -932,6 +930,8 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
     @Override
     protected void onResume() {
         volume_val = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volumeObserver = new VolumeObserver(this, new Handler());
+        getApplicationContext().getContentResolver().registerContentObserver(Settings.System.CONTENT_URI, true, volumeObserver);
         sharedPreferences = getSharedPreferences(stt_file, Activity.MODE_PRIVATE);
         sharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences2 = getSharedPreferences("value_lang", Activity.MODE_PRIVATE);
@@ -1002,6 +1002,7 @@ public class MainActivity extends AppCompatActivity implements TextView.OnEditor
             stt_Btn.performClick();
         }
         am.setStreamVolume(AudioManager.STREAM_MUSIC, volume_val, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        getApplicationContext().getContentResolver().unregisterContentObserver(volumeObserver);
         mTTS.stop();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
