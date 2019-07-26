@@ -1,4 +1,4 @@
-# https://play.google.com/store/apps/details?id=com.junmo.study <- 플레이스토어
+# 듣고 말하는 편리한 음성인식 어플리케이션
           
 
 심플한 디자인과 편리한 기능으로 쉽게 사용할 수 있는 음성인식 종합메모어플   
@@ -22,3 +22,4 @@
 3. 우리말, 영어, 중국어, 일본어 등등 여러나라의 언어에 맞게 인식이 가능하며 용도에따라 변경가능 
 
           
+https://play.google.com/store/apps/details?id=com.junmo.study  
