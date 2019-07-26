@@ -1,4 +1,4 @@
-# 듣고 말하는 편리한 음성인식 메모 어플리케이션 
+# https://play.google.com/store/apps/details?id=com.junmo.study <- 플레이스토어
           
 
 심플한 디자인과 편리한 기능으로 쉽게 사용할 수 있는 음성인식 종합메모어플   
